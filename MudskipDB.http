@@ -1,0 +1,6 @@
+@MudskipDB_HostAddress = http://localhost:5086
+
+GET {{MudskipDB_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

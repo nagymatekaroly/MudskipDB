@@ -31,22 +31,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-////await using (var scope = app.Services.CreateAsyncScope())
-//{
-  //  var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    //await dbContext.Database.MigrateAsync();
-    //Console.WriteLine("SEED INDUL!!!");
-    //await Seeder.SeedData(dbContext);
-    //Console.WriteLine("SEED LEFUTOTT!!!");
-//}
+// 🔹 Swagger mindig fusson Renderen is
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // 🔹 Middleware konfiguráció
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 app.UseSession();
 app.UseAuthorization();
 app.MapControllers();

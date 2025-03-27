@@ -90,52 +90,46 @@ namespace SlimeDB.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddHighscore([FromBody] Highscore highscore)
+        public async Task<IActionResult> AddHighscore([FromBody] HighscorePostDto input)
         {
-            // 🔎 UserId lekérése session-ből
+            // ✅ Sessionből userId
             var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("You must be logged in to post a highscore.");
+            if (userId == null)
+                return Unauthorized("You must be logged in to post a highscore.");
 
-            // 🔎 User ellenőrzés
+            // ✅ User + pálya lekérés
             var user = await _context.Users.FindAsync(userId);
-            var level = await _context.Levels.FindAsync(highscore.LevelId);
+            var level = await _context.Levels.FirstOrDefaultAsync(l => l.Name == input.LevelName);
 
             if (user == null || level == null)
-            {
                 return BadRequest("Invalid user or level.");
-            }
 
-            // 🔎 Megnézzük, van-e már rekord erre a userre és pályára
+            // ✅ Keresd meg, van-e már rekord
             var existingHighscore = await _context.Highscores
-                .FirstOrDefaultAsync(h => h.UserId == user.Id && h.LevelId == highscore.LevelId);
+                .FirstOrDefaultAsync(h => h.UserId == user.Id && h.LevelId == level.Id);
 
             if (existingHighscore != null)
             {
-                // Ha az új pontszám nem nagyobb, nem frissítünk
-                if (existingHighscore.HighscoreValue >= highscore.HighscoreValue)
-                {
+                if (existingHighscore.HighscoreValue >= input.HighscoreValue)
                     return Ok(existingHighscore);
-                }
 
-                // Frissítjük a rekordot
-                existingHighscore.HighscoreValue = highscore.HighscoreValue;
+                existingHighscore.HighscoreValue = input.HighscoreValue;
                 _context.Highscores.Update(existingHighscore);
             }
             else
             {
-                // Új rekord beszúrása
                 _context.Highscores.Add(new Highscore
                 {
                     UserId = user.Id,
-                    LevelId = highscore.LevelId,
-                    HighscoreValue = highscore.HighscoreValue
+                    LevelId = level.Id,
+                    HighscoreValue = input.HighscoreValue
                 });
             }
 
             await _context.SaveChangesAsync();
-
             return Ok("Highscore saved successfully.");
         }
+
 
 
 

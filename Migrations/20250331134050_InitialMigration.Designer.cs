@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MudskipDB.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250320130213_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250331134050_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,11 +60,33 @@ namespace MudskipDB.Migrations
                     b.ToTable("Levels");
                 });
 
+            modelBuilder.Entity("MudskipDB.Models.LevelStats", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("CompletionCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LevelId");
+
+                    b.ToTable("LevelStats");
+                });
+
             modelBuilder.Entity("MudskipDB.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("EmailAddress")
                         .IsRequired()
@@ -134,6 +156,17 @@ namespace MudskipDB.Migrations
                     b.Navigation("Level");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MudskipDB.Models.LevelStats", b =>
+                {
+                    b.HasOne("MudskipDB.Models.Level", "Level")
+                        .WithMany()
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Level");
                 });
 
             modelBuilder.Entity("Review", b =>

@@ -18,6 +18,8 @@ namespace MudskipDB.Models
         [Required]
         public string PasswordHash { get; set; }
 
+        public DateTime CreatedAt { get; set; }
+
         public string Role { get; set; } = "User"; // vagy "Admin"
     }
 }

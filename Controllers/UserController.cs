@@ -44,7 +44,8 @@ namespace SlimeDB.Controllers
                 Username = registerDto.Username,
                 Fullname = registerDto.Fullname,
                 EmailAddress = registerDto.EmailAddress,
-                PasswordHash = hashedPassword
+                PasswordHash = hashedPassword,
+                CreatedAt = DateTime.UtcNow 
             };
 
             _context.Users.Add(newUser);

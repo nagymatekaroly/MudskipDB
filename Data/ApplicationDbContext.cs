@@ -7,6 +7,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Level> Levels { get; set; }
     public DbSet<Highscore> Highscores { get; set; }
     public DbSet<Review> Reviews { get; set; }
+    public DbSet<LevelStats> LevelStats { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -34,5 +35,11 @@ public class ApplicationDbContext : DbContext
             .WithMany()
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+       
+        modelBuilder.Entity<LevelStats>()
+        .HasOne(ls => ls.Level)
+        .WithMany()
+        .HasForeignKey(ls => ls.LevelId)
+        .OnDelete(DeleteBehavior.Cascade);
     }
 }

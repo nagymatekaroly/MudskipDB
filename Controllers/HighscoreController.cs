@@ -104,14 +104,18 @@ namespace SlimeDB.Controllers
             if (user == null || level == null)
                 return BadRequest("Invalid user or level.");
 
-            // ✅ Keresd meg, van-e már rekord
+            // ✅ Highscore kezelése
             var existingHighscore = await _context.Highscores
                 .FirstOrDefaultAsync(h => h.UserId == user.Id && h.LevelId == level.Id);
 
             if (existingHighscore != null)
             {
                 if (existingHighscore.HighscoreValue >= input.HighscoreValue)
+                {
+                    // ✅ Highscore nem javult, de LevelStats-ot akkor is növeljük
+                    await IncrementLevelStats(level.Id);
                     return Ok(existingHighscore);
+                }
 
                 existingHighscore.HighscoreValue = input.HighscoreValue;
                 _context.Highscores.Update(existingHighscore);
@@ -126,9 +130,32 @@ namespace SlimeDB.Controllers
                 });
             }
 
+            // ✅ LevelStats frissítése mindig megtörténik
+            await IncrementLevelStats(level.Id);
+
             await _context.SaveChangesAsync();
             return Ok("Highscore saved successfully.");
         }
+
+        private async Task IncrementLevelStats(int levelId)
+        {
+            var stats = await _context.LevelStats.FirstOrDefaultAsync(ls => ls.LevelId == levelId);
+
+            if (stats == null)
+            {
+                _context.LevelStats.Add(new LevelStats
+                {
+                    LevelId = levelId,
+                    CompletionCount = 1
+                });
+            }
+            else
+            {
+                stats.CompletionCount += 1;
+                _context.LevelStats.Update(stats);
+            }
+        }
+
 
 
 

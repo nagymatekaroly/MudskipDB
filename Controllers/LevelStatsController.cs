@@ -12,7 +12,7 @@ public class LevelStatsController : ControllerBase
         _context = context;
     }
 
-    // 🔍 1. Lekérdezi az összes pályastatisztikát
+    // 🔍 1. Az összes pálya statisztikájának lekérdezése
     [HttpGet]
     public async Task<IActionResult> GetAllStats()
     {
@@ -28,26 +28,50 @@ public class LevelStatsController : ControllerBase
         return Ok(stats);
     }
 
-    // 🔧 2. Csak admin módosíthatja manuálisan a CompletionCount értéket
+    // 🔧 2. A CompletionCount értékét csak admin módosíthatja manuálisan
     [HttpPut("{levelId}")]
     public async Task<IActionResult> UpdateCompletionCount(int levelId, [FromBody] int newCount)
     {
         var userId = HttpContext.Session.GetInt32("UserId");
         if (userId == null)
-            return Unauthorized("Not logged in.");
+            return Unauthorized("A módosításhoz be kell jelentkezni.");
 
         var user = await _context.Users.FindAsync(userId);
         if (user == null || user.Role != "Admin")
-            return Forbid("Only admins can modify stats.");
+            return Forbid("Csak admin jogosultságú felhasználók módosíthatják a statisztikákat.");
 
         var stats = await _context.LevelStats.FirstOrDefaultAsync(ls => ls.LevelId == levelId);
         if (stats == null)
-            return NotFound("No stats found for this level.");
+            return NotFound("Nem található statisztika ehhez a pályához.");
 
         stats.CompletionCount = newCount;
         _context.LevelStats.Update(stats);
         await _context.SaveChangesAsync();
 
-        return Ok("Completion count updated successfully.");
+        return Ok("A teljesítésszámláló sikeresen frissítve.");
+    }
+
+    [HttpDelete("{levelId}")]
+    public async Task<IActionResult> DeleteLevelStats(int levelId)
+    {
+        // 📌 Sessionből felhasználó lekérése
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+            return Unauthorized("Csak bejelentkezett admin törölhet statisztikát.");
+
+        // 📌 Admin jogosultság ellenőrzése
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null || user.Role != "Admin")
+            return Forbid("Csak admin törölhet statisztikát.");
+
+        // 📌 Statisztika keresése a megadott levelId alapján
+        var stats = await _context.LevelStats.FirstOrDefaultAsync(ls => ls.LevelId == levelId);
+        if (stats == null)
+            return NotFound("Ehhez a pályához nem található statisztika.");
+
+        _context.LevelStats.Remove(stats);
+        await _context.SaveChangesAsync();
+
+        return Ok("A statisztika sikeresen törölve lett.");
     }
 }

@@ -16,7 +16,7 @@ namespace SlimeDB.Controllers
         }
 
         // GET: api/Level
-        // Az összes pálya lekérése
+        // 📌 Az összes pálya lekérése
         [HttpGet]
         public async Task<IActionResult> GetLevels()
         {
@@ -24,14 +24,14 @@ namespace SlimeDB.Controllers
 
             if (levels == null || !levels.Any())
             {
-                return NotFound("No levels found.");
+                return NotFound("Nem található egyetlen pálya sem.");
             }
 
             return Ok(levels);
         }
 
         // GET: api/Level/5
-        // Egy adott pálya lekérése ID alapján
+        // 📌 Egy adott pálya lekérése azonosító alapján
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLevel(int id)
         {
@@ -39,26 +39,26 @@ namespace SlimeDB.Controllers
 
             if (level == null)
             {
-                return NotFound($"Level with ID {id} not found.");
+                return NotFound($"A(z) {id} azonosítójú pálya nem található.");
             }
 
             return Ok(level);
         }
 
         // POST: api/Level
-        // Új pálya létrehozása
+        // 📌 Új pálya létrehozása
         [HttpPost]
         public async Task<IActionResult> CreateLevel([FromBody] Level level)
         {
             if (level == null)
             {
-                return BadRequest("Level data is null.");
+                return BadRequest("A pálya adatai hiányoznak.");
             }
 
-            // Validáció (például nézd meg, hogy a név nem üres)
+            // 📌 Validáció: a név nem lehet üres
             if (string.IsNullOrWhiteSpace(level.Name))
             {
-                return BadRequest("Level name is required.");
+                return BadRequest("A pálya neve kötelező.");
             }
 
             _context.Levels.Add(level);
@@ -68,20 +68,20 @@ namespace SlimeDB.Controllers
         }
 
         // PUT: api/Level/5
-        // Adott pálya frissítése
+        // 📌 Létező pálya frissítése
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateLevel(int id, [FromBody] Level level)
         {
             if (level == null || id != level.Id)
             {
-                return BadRequest("Level data is invalid.");
+                return BadRequest("A pálya adatai érvénytelenek.");
             }
 
             var existingLevel = await _context.Levels.FirstOrDefaultAsync(l => l.Id == id);
 
             if (existingLevel == null)
             {
-                return NotFound($"Level with ID {id} not found.");
+                return NotFound($"A(z) {id} azonosítójú pálya nem található.");
             }
 
             existingLevel.Name = level.Name;
@@ -89,11 +89,11 @@ namespace SlimeDB.Controllers
             _context.Levels.Update(existingLevel);
             await _context.SaveChangesAsync();
 
-            return NoContent();  // Válasz, ami jelzi, hogy sikeres volt a frissítés
+            return NoContent();  // 📌 Sikeres frissítés, válasz törzs nélkül
         }
 
         // DELETE: api/Level/5
-        // Adott pálya törlése
+        // 📌 Adott pálya törlése
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLevel(int id)
         {
@@ -101,13 +101,13 @@ namespace SlimeDB.Controllers
 
             if (level == null)
             {
-                return NotFound($"Level with ID {id} not found.");
+                return NotFound($"A(z) {id} azonosítójú pálya nem található.");
             }
 
             _context.Levels.Remove(level);
             await _context.SaveChangesAsync();
 
-            return NoContent();  // Válasz, ami jelzi, hogy a törlés sikeres volt
+            return NoContent();  // 📌 Sikeres törlés, válasz törzs nélkül
         }
     }
 }

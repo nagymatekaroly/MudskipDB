@@ -16,20 +16,22 @@ namespace SlimeDB.Controllers
             _context = context;
         }
 
+        // 🔹 Új értékelés beküldése
         [HttpPost]
         public async Task<IActionResult> PostReview([FromBody] ReviewDTO reviewDto)
         {
+            // 📌 Felhasználó azonosítása session alapján
             var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("You must be logged in to post a review.");
+            if (userId == null) return Unauthorized("Értékelés küldéséhez be kell jelentkezni.");
 
             var user = await _context.Users.FindAsync(userId);
-            if (user == null) return Unauthorized("User not found.");
+            if (user == null) return Unauthorized("A felhasználó nem található.");
 
-            // Ellenőrzés: van-e már review-ja
+            // 📌 Ellenőrzés: van-e már értékelése a felhasználónak
             bool alreadyReviewed = await _context.Reviews.AnyAsync(r => r.UserId == user.Id);
-            if (alreadyReviewed) return BadRequest("You have already submitted a review.");
+            if (alreadyReviewed) return BadRequest("Már küldtél be értékelést.");
 
-            // Az Id-t EF Core generálja, CreatedAt-ot itt állítjuk be
+            // 📌 Az Id-t az EF Core generálja, a CreatedAt-ot itt állítjuk be
             var newReview = new Review
             {
                 UserId = user.Id,
@@ -43,14 +45,14 @@ namespace SlimeDB.Controllers
 
             return Ok(new
             {
-                Message = "Review posted successfully!",
+                Message = "Az értékelés sikeresen el lett mentve!",
                 ReviewId = newReview.Id,
                 Username = user.Username,
                 CreatedAt = newReview.CreatedAt
             });
         }
 
-
+        // 🔹 Összes értékelés lekérése
         [HttpGet("all")]
         public async Task<IActionResult> GetAllReviews()
         {
@@ -62,32 +64,32 @@ namespace SlimeDB.Controllers
                     Username = r.User.Username,
                     Rating = r.Rating,
                     Comment = r.Comment,
-                    CreatedAt = r.CreatedAt.ToString("yyyy-MM-dd") // Csak napra pontos dátum
+                    CreatedAt = r.CreatedAt.ToString("yyyy-MM-dd") // 📌 Csak napra pontos dátum
                 })
                 .ToListAsync();
 
             return Ok(reviews);
         }
 
-
-
-        // 🔹 Review törlése CSAK adminnak
+        // 🔹 Értékelés törlése – CSAK admin számára elérhető
         [HttpDelete("{reviewId}")]
         public async Task<IActionResult> DeleteReview(int reviewId)
         {
+            // 📌 Bejelentkezett felhasználó ellenőrzése (admin jog)
             var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("You must be logged in as admin to delete a review.");
+            if (userId == null) return Unauthorized("Csak bejelentkezett admin törölhet értékelést.");
 
             var user = await _context.Users.FindAsync(userId);
-            if (user == null || user.Role != "Admin") return Forbid("Only admins can delete reviews.");
+            if (user == null || user.Role != "Admin") return Forbid("Csak admin törölhet értékelést.");
 
+            // 📌 Törlendő értékelés keresése
             var review = await _context.Reviews.FindAsync(reviewId);
-            if (review == null) return NotFound("Review not found.");
+            if (review == null) return NotFound("Az értékelés nem található.");
 
             _context.Reviews.Remove(review);
             await _context.SaveChangesAsync();
 
-            return Ok("Review deleted successfully.");
+            return Ok("Az értékelés sikeresen törölve lett.");
         }
     }
 }

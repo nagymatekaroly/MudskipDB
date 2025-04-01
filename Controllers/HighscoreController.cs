@@ -24,14 +24,14 @@ namespace SlimeDB.Controllers
         [HttpGet("{dotLevel}")]
         public async Task<IActionResult> GetHighscoresByDot(int dotLevel)
         {
-            // Ellenőrzés: van-e ilyen szint
+            // 📌 Ellenőrzés: létezik-e ilyen szint
             var level = await _context.Levels.FirstOrDefaultAsync(l => l.Id == dotLevel);
             if (level == null)
             {
-                return NotFound("The selected DOT level does not exist.");
+                return NotFound("A megadott DOT szint nem létezik.");
             }
 
-            // Highscore lekérés az adott szintre
+            // 📌 Highscore-ok lekérése az adott szinthez
             var highscores = await _context.Highscores
                 .Where(h => h.LevelId == dotLevel)
                 .Include(h => h.User)
@@ -45,21 +45,20 @@ namespace SlimeDB.Controllers
 
             if (!highscores.Any())
             {
-                return NotFound("No highscores found for this DOT level.");
+                return NotFound("Ehhez a DOT szinthez még nincs highscore bejegyzés.");
             }
 
             return Ok(highscores);
         }
 
-
-
+        // 🔎 GET: Saját highscore-ok lekérése (bejelentkezett userhez)
         [HttpGet("my-highscores")]
         public async Task<IActionResult> GetMyHighscores()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("You must be logged in to view your highscores.");
+            if (userId == null) return Unauthorized("Be kell jelentkezni a highscore-ok megtekintéséhez.");
 
-            // Csak a saját highscore-ok lekérése
+            // 📌 Bejelentkezett felhasználó highscore-jainak lekérése
             var userHighscores = await _context.Highscores
                 .Where(h => h.UserId == userId)
                 .Include(h => h.Level)
@@ -67,44 +66,45 @@ namespace SlimeDB.Controllers
 
             if (!userHighscores.Any())
             {
-                return NotFound("No highscores found for this user.");
+                return NotFound("A felhasználóhoz még nem tartozik highscore.");
             }
 
-            // Pályánként a legjobb highscore kiválasztása
+            // 📌 Pályánként a legjobb highscore kiválasztása
             var bestScoresPerLevel = userHighscores
                 .GroupBy(h => h.LevelId)
                 .Select(g => g.OrderByDescending(h => h.HighscoreValue).First())
                 .ToList();
 
-            // Összeállított válasz DTO, pálya nevével
+            // 📌 Válasz összeállítása pályanév + highscore párosokból
             var result = bestScoresPerLevel
                 .Select(h => new
                 {
                     LevelName = h.Level.Name,
                     Highscore = h.HighscoreValue
                 })
-                .OrderBy(h => h.LevelName) // vagy egyéni sorrend, ha kell
+                .OrderBy(h => h.LevelName)
                 .ToList();
 
             return Ok(result);
         }
 
+        // 🔹 Highscore hozzáadása vagy frissítése
         [HttpPost]
         public async Task<IActionResult> AddHighscore([FromBody] HighscorePostDto input)
         {
-            // ✅ Sessionből userId
+            // ✅ Sessionből felhasználó azonosító lekérése
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
-                return Unauthorized("You must be logged in to post a highscore.");
+                return Unauthorized("Highscore beküldéshez be kell jelentkezni.");
 
-            // ✅ User + pálya lekérés
+            // ✅ Felhasználó és pálya lekérése
             var user = await _context.Users.FindAsync(userId);
             var level = await _context.Levels.FirstOrDefaultAsync(l => l.Name == input.LevelName);
 
             if (user == null || level == null)
-                return BadRequest("Invalid user or level.");
+                return BadRequest("Hibás felhasználó vagy pályanév.");
 
-            // ✅ Highscore kezelése
+            // ✅ Highscore kezelés: meglévő rekord módosítása vagy új beszúrása
             var existingHighscore = await _context.Highscores
                 .FirstOrDefaultAsync(h => h.UserId == user.Id && h.LevelId == level.Id);
 
@@ -112,16 +112,18 @@ namespace SlimeDB.Controllers
             {
                 if (existingHighscore.HighscoreValue >= input.HighscoreValue)
                 {
-                    // ✅ Highscore nem javult, de LevelStats-ot akkor is növeljük
+                    // ✅ A meglévő highscore jobb vagy egyenlő – csak LevelStats növelés
                     await IncrementLevelStats(level.Id);
                     return Ok(existingHighscore);
                 }
 
+                // ✅ Új, jobb highscore – frissítés
                 existingHighscore.HighscoreValue = input.HighscoreValue;
                 _context.Highscores.Update(existingHighscore);
             }
             else
             {
+                // ✅ Még nincs highscore ehhez a pályához – új rekord
                 _context.Highscores.Add(new Highscore
                 {
                     UserId = user.Id,
@@ -130,19 +132,21 @@ namespace SlimeDB.Controllers
                 });
             }
 
-            // ✅ LevelStats frissítése mindig megtörténik
+            // ✅ Minden esetben növeljük a pálya statisztikáját
             await IncrementLevelStats(level.Id);
 
             await _context.SaveChangesAsync();
-            return Ok("Highscore saved successfully.");
+            return Ok("Highscore sikeresen mentve.");
         }
 
+        // 🔄 LevelStats növelése, ha végigmentek egy pályán
         private async Task IncrementLevelStats(int levelId)
         {
             var stats = await _context.LevelStats.FirstOrDefaultAsync(ls => ls.LevelId == levelId);
 
             if (stats == null)
             {
+                // 📌 Ha még nincs stat, létrehozunk egy új bejegyzést
                 _context.LevelStats.Add(new LevelStats
                 {
                     LevelId = levelId,
@@ -151,35 +155,37 @@ namespace SlimeDB.Controllers
             }
             else
             {
+                // 📌 Már van ilyen – növeljük a számlálót
                 stats.CompletionCount += 1;
                 _context.LevelStats.Update(stats);
             }
 
-            await _context.SaveChangesAsync(); // ← EZ A FONTOS
+            await _context.SaveChangesAsync(); // ← Fontos: menteni kell külön is!
         }
-        
+
+        // 🔥 Highscore törlése (csak admin jogosultsággal)
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHighscore(int id)
         {
-            // 🔐 Bejelentkezett felhasználó lekérése session-ből
+            // 🔐 Bejelentkezett felhasználó lekérése a session alapján
             var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("You must be logged in as admin.");
+            if (userId == null) return Unauthorized("Csak admin törölhet highscore-t.");
 
-            // 🔎 Felhasználó lekérése az adatbázisból
+            // 🔍 Felhasználó lekérése az adatbázisból
             var user = await _context.Users.FindAsync(userId);
             if (user == null || user.Role != "Admin")
             {
-                return Forbid("Only admin users can delete highscores.");
+                return Forbid("Csak admin jogosultsággal lehet törölni highscore-t.");
             }
 
-            // 🔎 Highscore megkeresése
+            // 🔍 Highscore bejegyzés megkeresése
             var highscore = await _context.Highscores.FindAsync(id);
             if (highscore == null)
             {
-                return NotFound("Highscore not found.");
+                return NotFound("A highscore nem található.");
             }
 
-            // 🔥 Törlés
+            // 🗑️ Törlés végrehajtása
             _context.Highscores.Remove(highscore);
             await _context.SaveChangesAsync();
 

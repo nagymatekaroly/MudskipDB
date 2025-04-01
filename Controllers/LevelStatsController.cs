@@ -12,7 +12,7 @@ public class LevelStatsController : ControllerBase
         _context = context;
     }
 
-    // 🔍 1. Az összes pálya statisztikájának lekérdezése
+   
     [HttpGet]
     public async Task<IActionResult> GetAllStats()
     {
@@ -28,7 +28,7 @@ public class LevelStatsController : ControllerBase
         return Ok(stats);
     }
 
-    // 🔧 2. A CompletionCount értékét csak admin módosíthatja manuálisan
+
     [HttpPut("{levelId}")]
     public async Task<IActionResult> UpdateCompletionCount(int levelId, [FromBody] int newCount)
     {
@@ -54,17 +54,14 @@ public class LevelStatsController : ControllerBase
     [HttpDelete("{levelId}")]
     public async Task<IActionResult> DeleteLevelStats(int levelId)
     {
-        // 📌 Sessionből felhasználó lekérése
         var userId = HttpContext.Session.GetInt32("UserId");
         if (userId == null)
             return Unauthorized("Csak bejelentkezett admin törölhet statisztikát.");
 
-        // 📌 Admin jogosultság ellenőrzése
         var user = await _context.Users.FindAsync(userId);
         if (user == null || user.Role != "Admin")
             return Forbid("Csak admin törölhet statisztikát.");
 
-        // 📌 Statisztika keresése a megadott levelId alapján
         var stats = await _context.LevelStats.FirstOrDefaultAsync(ls => ls.LevelId == levelId);
         if (stats == null)
             return NotFound("Ehhez a pályához nem található statisztika.");

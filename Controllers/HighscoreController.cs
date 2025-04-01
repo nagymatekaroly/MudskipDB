@@ -154,12 +154,10 @@ namespace SlimeDB.Controllers
                 stats.CompletionCount += 1;
                 _context.LevelStats.Update(stats);
             }
+
+            await _context.SaveChangesAsync(); // ← EZ A FONTOS
         }
-
-
-
-
-
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHighscore(int id)
         {

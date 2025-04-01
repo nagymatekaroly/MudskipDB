@@ -71,21 +71,26 @@ namespace SlimeDB.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
-            // 📌 Felhasználó keresése felhasználónév vagy email alapján
+            // 📌 Felhasználó keresése név vagy email alapján
             var user = await _context.Users.FirstOrDefaultAsync(u =>
                 u.Username == loginDto.Username || u.EmailAddress == loginDto.Username);
 
-            // 📌 Hitelesítési adatok ellenőrzése
+            // 📌 Hibás hitelesítés
             if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash))
             {
                 return Unauthorized("Hibás felhasználónév/email vagy jelszó.");
             }
 
-            // 📌 Session beállítása a bejelentkezett felhasználónak
+            // 📌 Session beállítás
             HttpContext.Session.SetInt32("UserId", user.Id);
 
-            return Ok(new { Message = "Sikeres bejelentkezés", UserId = user.Id });
+            return Ok(new
+            {
+                Message = "Sikeres bejelentkezés",
+                UserId = user.Id
+            });
         }
+
 
         // 🔹 Profil frissítése
         [HttpPut("update")]

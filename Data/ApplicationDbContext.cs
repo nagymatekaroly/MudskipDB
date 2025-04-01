@@ -37,9 +37,9 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
        
         modelBuilder.Entity<LevelStats>()
-        .HasOne(ls => ls.Level)
-        .WithMany()
-        .HasForeignKey(ls => ls.LevelId)
-        .OnDelete(DeleteBehavior.Cascade);
+            .HasOne(ls => ls.Level)
+            .WithMany()
+            .HasForeignKey(ls => ls.LevelId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -20,9 +20,9 @@ builder.Services.AddSession(options =>
 });
 
 // 🔐 Data Protection kulcsok mentése fájlba
-builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(@"/app/keys"))
-    .SetApplicationName("MudskipDB");
+//builder.Services.AddDataProtection()
+   // .PersistKeysToFileSystem(new DirectoryInfo(@"/app/keys"))
+   // .SetApplicationName("MudskipDB");
 
 // 🚀 API + Swagger
 builder.Services.AddControllers();

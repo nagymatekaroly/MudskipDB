@@ -12,7 +12,7 @@ public class LevelStatsController : ControllerBase
         _context = context;
     }
 
-   
+
     [HttpGet]
     public async Task<IActionResult> GetAllStats()
     {

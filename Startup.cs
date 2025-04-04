@@ -14,7 +14,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-       
+
         services.AddDbContext<ApplicationDbContext>(options =>
               options.UseMySql(
                   Configuration.GetConnectionString("DefaultConnection"),

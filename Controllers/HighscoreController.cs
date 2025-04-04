@@ -191,5 +191,37 @@ namespace SlimeDB.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("by-level")]
+        public async Task<IActionResult> GetHighscoreForLevel([FromQuery] string levelName)
+        {
+            // ✅ Sessionből felhasználó azonosító lekérése
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return Unauthorized("Highscore lekéréshez be kell jelentkezni.");
+
+            // ✅ Pálya lekérése név alapján
+            var level = await _context.Levels.FirstOrDefaultAsync(l => l.Name == levelName);
+            if (level == null)
+                return BadRequest("Hibás pályanév.");
+
+            // ✅ Highscore rekord lekérése az adott user + pályára
+            var highscore = await _context.Highscores
+                .Include(h => h.User)
+                .FirstOrDefaultAsync(h => h.UserId == userId && h.LevelId == level.Id);
+
+            if (highscore == null)
+                return Ok(null); // Még nincs rekord
+
+            // ✅ DTO válasz
+            return Ok(new HighscoreCheckDto
+            {
+                Username = highscore.User.Username,
+                HighscoreValue = highscore.HighscoreValue,
+                LevelName = levelName
+            });
+        
+    }
+
     }
 }

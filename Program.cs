@@ -1,6 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MudskipDB;
-using MudskipDB.Models;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +19,11 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// 🔐 Data Protection kulcsok mentése fájlba
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(@"/app/keys"))
+    .SetApplicationName("MudskipDB");
+
 // 🚀 API + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -27,7 +31,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 🧱 Middleware helyes sorrendben
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -36,9 +39,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseSession();            // 🔐 Session itt legyen!
+app.UseSession();            // ✅ Session mindig routing után!
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

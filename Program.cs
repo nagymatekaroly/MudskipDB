@@ -5,26 +5,26 @@ using MudskipDB.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// 🔌 Adatbázis
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         connectionString,
         ServerVersion.AutoDetect(connectionString)
     ));
 
+// 🌐 CORS engedélyezés (bármilyen originről jöhet kérés)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()        // VAGY konkrét domaint: .WithOrigins("https://valami.hu")
+        policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
 });
 
+// 🧠 Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -33,20 +33,21 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-
+// 🚀 API és Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// ‼️ FONTOS: CORS legyen az elsők között!
+app.UseCors("AllowAll");
 
 app.UseSession();
 app.UseAuthorization();
-app.MapControllers();
 
+app.MapControllers();
 app.Run();

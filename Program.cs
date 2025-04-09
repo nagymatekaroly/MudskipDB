@@ -43,9 +43,13 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// ‼️ FONTOS: CORS legyen az elsők között!
+app.UseHttpsRedirection(); // Ha van
+app.UseRouting();
+
+// 💡 FONTOS: CORS mindig a routing után jöjjön!
 app.UseCors("AllowAll");
 
+// 🔐 Session és authorization csak ezután jön!
 app.UseSession();
 app.UseAuthorization();
 

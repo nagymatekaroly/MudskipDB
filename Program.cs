@@ -8,19 +8,24 @@ var builder = WebApplication.CreateBuilder(args);
 // 🔌 Adatbázis
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString)
-    ));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+);
 
-// 🌐 CORS engedélyezés (bármilyen originről jöhet kérés)
+// 🌐 CORS – weboldal sessionnel (cookie), Unity engedélyezve
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("FrontendAndUnity", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.WithOrigins("http://localhost:5173") // weboldal origin
+              .AllowCredentials()                  // sütik engedélyezése weboldalnak
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+
+        policy.SetIsOriginAllowed(origin =>
+            origin == "http://localhost:5173" ||   // web frontend
+            origin == "http://localhost" ||        // Unity Editor (biztonsági ráhagyás)
+            string.IsNullOrEmpty(origin)           // Unity standalone build (origin nélkül)
+        );
     });
 });
 
@@ -31,25 +36,24 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// 🚀 API és Swagger
+// 🚀 Swagger, Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// 🔧 Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection(); // Ha van
+// 🔐 Middleware sorrend
+app.UseHttpsRedirection();
 app.UseRouting();
-
-// 💡 FONTOS: CORS mindig a routing után jöjjön!
-app.UseCors("AllowAll");
-
-// 🔐 Session és authorization csak ezután jön!
+app.UseCors("FrontendAndUnity");
 app.UseSession();
 app.UseAuthorization();
 

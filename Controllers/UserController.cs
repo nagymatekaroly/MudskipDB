@@ -67,6 +67,17 @@ namespace MudskipDB.Controllers
             return Ok("A regisztráció sikeres volt.");
         }
 
+        [HttpGet("me")]
+        public IActionResult GetCurrentUser()
+        {
+            var username = HttpContext.Session.GetString("Username");
+
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "Nem vagy bejelentkezve." });
+
+            return Ok(new { Username = username });
+        }
+
         // 🔹 Bejelentkezés (Session beállítása)
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)

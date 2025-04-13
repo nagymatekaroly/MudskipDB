@@ -94,6 +94,7 @@ namespace MudskipDB.Controllers
 
             // 📌 Session beállítása a bejelentkezett felhasználónak
             HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetString("Username", user.Username);
 
             return Ok(new { Message = "Sikeres bejelentkezés", UserId = user.Id });
         }

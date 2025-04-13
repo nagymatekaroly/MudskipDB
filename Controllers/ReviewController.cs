@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MudskipDB.Dto;
-using MudskipDB.Models;
 
-namespace SlimeDB.Controllers
+
+namespace MudskipDB.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Session;
-using Microsoft.EntityFrameworkCore;
-using MudskipDB;
-using MudskipDB.Models;
+﻿using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

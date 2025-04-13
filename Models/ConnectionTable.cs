@@ -1,8 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-
-namespace MudskipDB.Models
+﻿namespace MudskipDB.Models
 {
     public class ConnectionTable
     {

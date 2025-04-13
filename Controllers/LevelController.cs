@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MudskipDB.Models;
 
-namespace SlimeDB.Controllers
+namespace MudskipDB.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace SlimeDB.Controllers
+namespace MudskipDB.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

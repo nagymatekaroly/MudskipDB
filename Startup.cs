@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
-using System;
 
 public class Startup
 {

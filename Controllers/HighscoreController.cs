@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MudskipDB.Dto;
 using MudskipDB.Models;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
-namespace SlimeDB.Controllers
+namespace MudskipDB.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
             origin == "http://localhost:5173" ||   // web frontend
             origin == "http://localhost" ||        // Unity Editor (biztonsági ráhagyás)
             string.IsNullOrEmpty(origin)           // Unity standalone build (origin nélkül)
-        );
+        ); 
     });
 });
 
@@ -37,6 +37,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
+
+// ✅ HttpContext eléréséhez
+builder.Services.AddHttpContextAccessor();
 
 // 🚀 Swagger, Controllers
 builder.Services.AddControllers();

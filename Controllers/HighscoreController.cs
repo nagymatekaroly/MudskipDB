@@ -49,12 +49,12 @@ namespace MudskipDB.Controllers
 
         // 🔎 GET: Saját highscore-ok lekérése (bejelentkezett userhez)
         [HttpGet("my-highscores")]
-        public async Task<IActionResult> GetMyHighscores()
+        public async Task<IActionResult> GetMyHighscores([FromQuery] int? userId = null)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("Be kell jelentkezni a highscore-ok megtekintéséhez.");
+            // 🔧 SESSION fallback (ha nincs userId átadva, akkor próbál sessionből)
+            userId ??= HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Nincs megadva userId, és nem vagy bejelentkezve.");
 
-            // 📌 Bejelentkezett felhasználó highscore-jainak lekérése
             var userHighscores = await _context.Highscores
                 .Where(h => h.UserId == userId)
                 .Include(h => h.Level)
@@ -65,13 +65,11 @@ namespace MudskipDB.Controllers
                 return NotFound("A felhasználóhoz még nem tartozik highscore.");
             }
 
-            // 📌 Pályánként a legjobb highscore kiválasztása
             var bestScoresPerLevel = userHighscores
                 .GroupBy(h => h.LevelId)
                 .Select(g => g.OrderByDescending(h => h.HighscoreValue).First())
                 .ToList();
 
-            // 📌 Válasz összeállítása pályanév + highscore párosokból
             var result = bestScoresPerLevel
                 .Select(h => new
                 {

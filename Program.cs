@@ -22,6 +22,7 @@ builder.Services.AddCors(options =>
             origin == "https://localhost:7137" ||  // Blazor WASM frontend
             origin == "http://localhost:7137" ||   // Blazor fallback
             origin == "http://localhost:5173" ||   // web frontend
+            origin == "https://mudskipthesliem.netlify.app" || // Netlify frontend
             origin == "http://localhost" ||        // Unity Editor (biztonsági ráhagyás)
             string.IsNullOrEmpty(origin)           // Unity standalone build (origin nélkül)
         ); 

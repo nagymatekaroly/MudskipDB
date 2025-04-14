@@ -2,30 +2,28 @@
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔌 Adatbázis
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 );
 
-// 🌐 CORS – weboldal sessionnel (cookie), Unity engedélyezve
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendAndUnity", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // weboldal origin
-              .AllowCredentials()                  // sütik engedélyezése weboldalnak
+        policy.WithOrigins("http://localhost:5173") 
+              .AllowCredentials()                  
               .AllowAnyHeader()
               .AllowAnyMethod();
 
         policy.SetIsOriginAllowed(origin =>
-            origin == "https://localhost:7137" ||  // Blazor WASM frontend
-            origin == "http://localhost:7137" ||   // Blazor fallback
-            origin == "http://localhost:5173" ||   // web frontend
-            origin == "https://mudskipthesliem.netlify.app" || // Netlify frontend
-            origin == "http://localhost" ||        // Unity Editor (biztonsági ráhagyás)
-            string.IsNullOrEmpty(origin)           // Unity standalone build (origin nélkül)
-        ); 
+            origin == "https://localhost:7137" ||
+            origin == "http://localhost:7137" ||
+            origin == "http://localhost:5173" ||
+            origin == "https://mudskipthesliem.netlify.app" ||
+            origin == "http://localhost" ||
+            string.IsNullOrEmpty(origin)
+        );
     });
 });
 
@@ -39,21 +37,17 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// ✅ HttpContext eléréséhez
 builder.Services.AddHttpContextAccessor();
 
-// 🚀 Swagger, Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 🔧 Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// 🔐 Middleware sorrend
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("FrontendAndUnity");

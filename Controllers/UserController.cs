@@ -89,7 +89,7 @@ namespace MudskipDB.Controllers
             // 📌 Hitelesítési adatok ellenőrzése
             if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash))
             {
-                return Unauthorized("Hibás felhasználónév/email vagy jelszó.");
+                return Unauthorized("Hibás felhasználónév vagy jelszó.");
             }
 
             // 📌 Session beállítása a bejelentkezett felhasználónak

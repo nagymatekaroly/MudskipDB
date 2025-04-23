@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
             origin == "https://localhost:7137" ||
             origin == "http://localhost:7137" ||
             origin == "http://localhost:5173" ||
-            origin == "https://mudskipthesliem.netlify.app" ||
+            origin == "https://mudskiptheslime.netlify.app" ||
             origin == "http://localhost" ||
             string.IsNullOrEmpty(origin)
         );
